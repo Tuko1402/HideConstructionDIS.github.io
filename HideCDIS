@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HIDE Construction Database Inventory System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f1f5f2;
+  --surface: #ffffff;
+  --ink: #1b2a25;
+  --muted: #5b6c65;
+  --line: #dce5e0;
+  --accent: #00704a;
+  --accent-ink: #ffffff;
+  --band: #1e3932;
+  --on-band: #ffffff;
+  --on-band-dim: rgba(255, 255, 255, 0.74);
+  --info: #0f6a8e;
+  --own: #7d5f17;
+  --good: #1e7f4f;
+  --warn: #a45a00;
+  --bad: #b3261e;
+  --map-land: #e6efe9;
+  --map-water: #bcdcee;
+  --map-road: #ffffff;
+  --map-block: #d3e2d9;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --radius: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1714; --surface: #14211d; --ink: #e8f0ec; --muted: #97a8a0; --line: #25362f;
+    --accent: #34b583; --accent-ink: #06130e; --band: #0a1411;
+    --info: #5cb8e0; --own: #d9b26a; --good: #4cc38a; --warn: #e0a53a; --bad: #f07a72;
+    --map-land: #1a2a25; --map-water: #1f4256; --map-road: #2b3f38; --map-block: #213630;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1714; --surface: #14211d; --ink: #e8f0ec; --muted: #97a8a0; --line: #25362f;
+  --accent: #34b583; --accent-ink: #06130e; --band: #0a1411;
+  --info: #5cb8e0; --own: #d9b26a; --good: #4cc38a; --warn: #e0a53a; --bad: #f07a72;
+  --map-land: #1a2a25; --map-water: #1f4256; --map-road: #2b3f38; --map-block: #213630;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 56px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mono { font-family: var(--font-mono); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ic { flex: none; }
+
+/* header band */
+.top { position: relative; overflow: hidden; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; padding: 16px 20px; border-radius: 20px; background: var(--band); color: var(--on-band); border: 1px solid rgba(255, 255, 255, 0.08); }
+.top > svg.contour { position: absolute; right: -30px; top: -50px; width: 320px; height: 220px; opacity: 0.16; pointer-events: none; }
+.brand { position: relative; display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand-mark { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #ffffff; color: #1e3932; flex: none; }
+.brand-name { font-weight: 800; font-size: 18px; line-height: 1.15; letter-spacing: -0.01em; }
+.brand-sub { font-size: 13px; color: var(--on-band-dim); }
+.toggle { position: relative; display: inline-flex; align-items: center; gap: 10px; font: inherit; font-size: 14px; font-weight: 600; color: var(--on-band); background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 999px; padding: 7px 16px 7px 10px; cursor: pointer; }
+.toggle:hover { background: rgba(255, 255, 255, 0.18); }
+.sw { width: 32px; height: 18px; border-radius: 9px; background: rgba(255, 255, 255, 0.35); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #ffffff; transition: transform 0.15s; }
+.toggle[aria-pressed="true"] .sw { background: #4cc38a; }
+.toggle[aria-pressed="true"] .sw::after { transform: translateX(14px); }
+
+/* headings */
+main { outline: none; }
+.eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; }
+.lede { margin: 8px 0 0; color: var(--muted); max-width: 68ch; }
+.pagehead { margin-bottom: 20px; }
+
+/* buttons and inputs */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.1); color: var(--accent-ink); }
+.btn.small { padding: 4px 12px; font-size: 13px; }
+.btn.danger { color: var(--bad); }
+.btn.danger:hover { border-color: var(--bad); color: var(--bad); }
+.in { width: 100%; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 10px; }
+.in:focus { border-color: var(--accent); outline: none; }
+textarea.in { resize: vertical; }
+
+/* summary tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.tile { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.dot { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.tile b { display: block; font-size: 24px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 13px; color: var(--muted); }
+
+/* query strip */
+.sql { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--ink) 4%, var(--surface)); font-family: var(--font-mono); font-size: 12.5px; }
+.sqltag { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.sql code { font-family: inherit; flex: 1 1 24ch; min-width: 0; overflow-wrap: anywhere; }
+.kw { color: var(--accent); font-weight: 500; }
+.sqlres { color: var(--muted); white-space: nowrap; }
+
+/* master list */
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.bar .search { position: relative; flex: 1 1 260px; min-width: 0; }
+.bar .search .ic { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.bar .search input { padding: 10px 14px 10px 42px; border-radius: 999px; background: var(--surface); }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+table { width: 100%; min-width: 800px; border-collapse: collapse; table-layout: fixed; }
+th { text-align: left; padding: 12px 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--line); white-space: nowrap; }
+td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.nm { font-weight: 700; font-size: 15px; line-height: 1.35; word-break: break-word; }
+
+/* Minimalized Location Styling (Prevents vertical bleeding) */
+td.lc { color: var(--muted); font-size: 13.5px; line-height: 1.4; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 220px; }
+
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+.bid { font-family: var(--font-mono); font-size: 13.5px; font-weight: 600; white-space: nowrap; text-underline-offset: 3px; }
+.pk { margin-left: 6px; font-size: 10px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 999px; letter-spacing: 0.04em; vertical-align: 1px; }
+.pinbtn { width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; color: var(--accent); border: 1.5px solid var(--line); background: var(--surface); text-decoration: none; }
+.pinbtn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.empty { text-align: center; color: var(--muted); padding: 32px 16px; }
+
+/* Progress Bar Component */
+.progress-box { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.progress-bar-track { flex: 1; height: 8px; background: color-mix(in srgb, var(--ink) 10%, var(--surface)); border-radius: 999px; overflow: hidden; position: relative; }
+.progress-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.3s ease; }
+.progress-num { font-family: var(--font-mono); font-weight: 700; font-size: 13px; min-width: 42px; text-align: right; }
+
+.pct-select { padding: 4px 8px; font-weight: 700; font-family: var(--font-mono); border-radius: 8px; font-size: 13px; cursor: pointer; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
+.pct-select:focus { border-color: var(--accent); outline: none; }
+
+/* record card */
+.topnav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.cardhead { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-start; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--line); }
+.cardhead-main { flex: 1 1 320px; min-width: 0; display: grid; gap: 6px; }
+.where { display: flex; align-items: flex-start; gap: 8px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; word-break: break-word; max-width: 60ch; }
+.where .ic { margin-top: 3px; color: var(--accent); flex: none; }
+.cardhead-side { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.idtag { font-family: var(--font-mono); font-size: 13.5px; font-weight: 600; padding: 4px 12px; border: 1.5px solid var(--line); border-radius: 999px; }
+.detail { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; padding: 24px; }
+.left { display: grid; gap: 20px; align-content: start; min-width: 0; }
+.right { min-width: 0; display: grid; gap: 16px; }
+.photo { aspect-ratio: 4 / 3; max-width: 100%; border: 1.5px dashed var(--muted); border-radius: var(--radius); display: grid; place-items: center; overflow: hidden; background: color-mix(in srgb, var(--ink) 4%, var(--surface)); }
+.photo.has { border-style: solid; border-color: var(--line); }
+.photo.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph { display: grid; justify-items: center; gap: 6px; padding: 16px; text-align: center; color: var(--muted); }
+.ph p { margin: 0; }
+.ph .small { font-size: 13px; }
+.photo-cap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+figure { margin: 0; }
+.photo-actions { display: flex; gap: 8px; }
+.k { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+/* Progress Card Widget */
+.progress-card { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); border: 1.5px solid color-mix(in srgb, var(--accent) 25%, var(--surface)); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; }
+.progress-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.progress-card-title { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+
+/* Site Visits Section */
+.visits-sec { margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--line); }
+.visits-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.visits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 14px; }
+.visit-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.visit-img { height: 140px; background: color-mix(in srgb, var(--ink) 6%, var(--surface)); display: grid; place-items: center; border-bottom: 1px solid var(--line); overflow: hidden; position: relative; }
+.visit-img img { width: 100%; height: 100%; object-fit: cover; }
+.visit-body { padding: 12px; display: grid; gap: 6px; flex: 1; }
+.visit-date { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--accent); display: flex; justify-content: space-between; align-items: center; }
+.visit-eval { font-size: 13.5px; line-height: 1.4; color: var(--ink); margin: 0; }
+.add-visit-box { background: color-mix(in srgb, var(--ink) 3%, var(--surface)); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 14px; display: grid; gap: 12px; }
+
+/* map card */
+.mapbox { display: grid; gap: 10px; }
+.mapcard { display: block; text-decoration: none; color: inherit; border: 1.5px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.mapcard:hover { border-color: var(--accent); }
+.mapcard svg { display: block; width: 100%; height: auto; }
+.mapcard-text { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.mapcard-text > div { flex: 1; min-width: 0; }
+.mapcard-text strong { display: block; font-weight: 700; }
+.mapcard-text small { display: block; color: var(--muted); overflow-wrap: anywhere; }
+.mapcard-text .ic { color: var(--accent); }
+
+/* sections and rows */
+.sec { padding-bottom: 12px; }
+.sec h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 16px; font-weight: 800; }
+.sec h2 .dot { width: 32px; height: 32px; }
+.sec h2 .pill { margin-left: auto; font-size: 12.5px; }
+.fields { margin: 0; }
+.row { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row dt { margin: 0; }
+.row dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.row.wide { grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: start; }
+.remark { margin: 0; max-width: 62ch; }
+.num { font-variant-numeric: tabular-nums; }
+.none { color: var(--muted); }
+.cardfoot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--line); }
+
+/* pills */
+.pill { --tone: var(--muted); display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tone) 32%, var(--surface)); }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.t-good { --tone: var(--good); }
+.t-warn { --tone: var(--warn); }
+.t-bad { --tone: var(--bad); }
+.t-info { --tone: var(--info); }
+.t-own { --tone: var(--own); }
+
+/* developer tools */
+.dev { margin-top: 20px; padding: 18px; border: 1.5px dashed var(--muted); border-radius: var(--radius); background: var(--surface); }
+.dev h2 { margin: 0 0 6px; font-size: 16px; font-weight: 800; }
+.dev p { margin: 0 0 12px; color: var(--muted); max-width: 70ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.json { width: 100%; height: 200px; margin-top: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; }
+
+/* toast */
+.toast { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; padding: 12px max(16px, env(safe-area-inset-left, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000; }
+.toast.show { opacity: 1; }
+.toast span { background: var(--band); color: var(--on-band); padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+@media (max-width: 860px) {
+  .detail { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  h1 { font-size: 22px; }
+  table { min-width: 0; table-layout: auto; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table, tbody, tr, td { display: block; }
+  tbody tr { position: relative; padding: 14px 64px 14px 16px; border-bottom: 1px solid var(--line); }
+  tbody tr:last-child { border-bottom: 0; }
+  td { padding: 3px 0; border: 0; }
+  td.lc { max-width: 100%; }
+  td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  td.pin { position: absolute; top: 12px; right: 12px; padding: 0; }
+  td.empty { padding: 28px 16px; }
+}
+@media (max-width: 480px) {
+  .row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .cardhead, .detail, .cardfoot { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head><body><div class="wrap">
+  <header class="top">
+    <svg class="contour" viewBox="0 0 320 220" fill="none" stroke="#ffffff" stroke-width="1.5" aria-hidden="true">
+      <ellipse cx="200" cy="100" rx="40" ry="26"></ellipse><ellipse cx="200" cy="100" rx="70" ry="46"></ellipse>
+      <ellipse cx="200" cy="100" rx="100" ry="66"></ellipse><ellipse cx="200" cy="100" rx="130" ry="86"></ellipse>
+      <ellipse cx="200" cy="100" rx="160" ry="106"></ellipse>
+    </svg>
+    <div class="brand">
+      <span class="brand-mark" id="brandMark"></span>
+      <div>
+        <div class="brand-name">HIDE Construction Database Inventory System</div>
+        <div class="brand-sub">Mapua Malayan Colleges Mindanao</div>
+      </div>
+    </div>
+    <button id="editToggle" class="toggle" type="button" aria-pressed="false"><span class="sw" aria-hidden="true"></span><span id="editLabel">Edit mode: off</span></button>
+  </header>
+
+  <main id="app" tabindex="-1"></main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+
+const DATA_VERSION = 3;
+const TABLE = 'buildings';
+const ID_PREFIX = 'N18R01';
+const SOURCE_NOTE = 'Data entered from the Mapua Malayan Colleges Mindanao inventory of national government and private owned projects.';
+
+const OPTIONS = {
+  status: ['Ongoing Construction', 'Privately Owned'],
+  group: ['(a) Main', '(b) Utility', '(c) Others'],
+  percentages: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+};
+
+const TONES = {
+  status: { 'Ongoing Construction': 'info', 'Privately Owned': 'own' },
+  rating: { 'Good': 'good', 'Minor repair': 'warn', 'Major repair': 'bad', 'Needs total rehab': 'bad', 'Not yet rated': 'neutral' }
+};
+const STATUS_ICONS = { 'Ongoing Construction': 'hardhat', 'Privately Owned': 'key' };
+
+const FIELDS = {
+  id:         { label: 'Building ID',                       col: 'building_id' },
+  name:       { label: 'Name of Building',                  col: 'name' },
+  location:   { label: 'Location',                          col: 'location' },
+  percentage: { label: 'Construction Percentage',           col: 'percentage', kind: 'select', options: OPTIONS.percentages },
+  region:     { label: 'Region',                            col: 'region' },
+  office:     { label: 'Implementing Office',               col: 'implementing_office' },
+  agency:     { label: 'Agency',                            col: 'agency' },
+  group:      { label: 'Group',                             col: 'building_group', kind: 'select', options: OPTIONS.group },
+  lotOwned:   { label: 'Lot owned area',                    col: 'lot_owned_sqm', kind: 'area' },
+  lotLeased:  { label: 'Lot leased area',                   col: 'lot_leased_sqm', kind: 'area' },
+  birZonal:   { label: 'BIR zonal value',                   col: 'bir_zonal_value', kind: 'perarea' },
+  status:     { label: 'Building status: owned',  short: 'Status', col: 'building_status', kind: 'select', options: OPTIONS.status },
+  leased:     { label: 'Building status: leased / rented',  col: 'leased_rented' },
+  floorArea:  { label: 'Total floor area',                  col: 'floor_area_sqm', kind: 'area' },
+  storeys:    { label: 'No. of storey',                     col: 'storeys', kind: 'int' },
+  type:       { label: 'Type of construction',              col: 'construction_type' },
+  built:      { label: 'Date of construction',              col: 'construction_date', kind: 'date' },
+  bookValue:  { label: 'Book value',                        col: 'book_value_php', kind: 'money' },
+  appraised:  { label: 'Appraised value',                   col: 'appraised_value_php', kind: 'money' },
+  totalBldgs: { label: 'Total no. of buildings',            col: 'total_bldgs', kind: 'int' },
+  goodNo:     { label: 'Good: no. of buildings',            col: 'good_no', kind: 'int' },
+  minorNo:    { label: 'Minor repair: no. of buildings',    col: 'minor_no', kind: 'int' },
+  minorCost:  { label: 'Minor repair: estimated cost',      col: 'minor_cost_php', kind: 'money' },
+  majorNo:    { label: 'Major repair: no. of buildings',    col: 'major_no', kind: 'int' },
+  majorCost:  { label: 'Major repair: estimated cost',      col: 'major_cost_php', kind: 'money' },
+  rehabNo:    { label: 'Total rehab / reconstruction: no. of buildings', col: 'rehab_no', kind: 'int' },
+  rehabCost:  { label: 'Total rehab / reconstruction: estimated cost',   col: 'rehab_cost_php', kind: 'money' },
+  remarks:    { label: 'Remarks',                           col: 'remarks', kind: 'textarea' },
+  mapQuery:   { label: 'Google Maps search text',           col: 'map_query' }
+};
+
+const MASTER_COLUMNS = ['id', 'name', 'location', 'percentage', 'status'];
+
+const SECTIONS = [
+  { title: 'Project',                    icon: 'building', fields: ['region', 'office', 'agency', 'group'] },
+  { title: 'Property status',            icon: 'lot',      fields: ['lotOwned', 'lotLeased', 'birZonal', 'status', 'leased'] },
+  { title: 'Description of the building', icon: 'layers',  fields: ['floorArea', 'storeys', 'type', 'built', 'bookValue', 'appraised', 'totalBldgs'] },
+  { title: 'Condition of buildings',     icon: 'shield',   rating: true, fields: ['goodNo', 'minorNo', 'minorCost', 'majorNo', 'majorCost', 'rehabNo', 'rehabCost'] },
+  { title: 'Remarks',                    icon: 'note',     fields: ['remarks'] }
+];
+
+const NOTES = [
+  { title: 'Database Overview.', text: 'The master list is the inventory overview screen of HIDE Construction Database. Each row represents a project record.' },
+  { title: 'Property Detail & Site Visits.', text: 'Select a Building ID to view comprehensive property records, track construction percentage progress via dropdown/sliders, and log visit photos with evaluation notes.' }
+];
+
+const DATA = [
+  { id: 'N18R010012', name: 'Retarding Basin, Phase-2', location: 'La Verna, Davao City', percentage: 40,
+    mapQuery: 'Retarding Basin Phase 2, La Verna, Davao City',
+    region: 'Region XI', office: 'Rely Construction and Supply Inc', agency: 'DPWH Davao City District Engineering Office', group: '(a) Main',
+    lotOwned: 'N/A', lotLeased: 0, birZonal: 'N/A', status: 'Ongoing Construction', leased: '',
+    floorArea: 'N/A', storeys: 'N/A', type: 'Gravel Road with Aggregate Base Course and Slope Protection', built: 'AB 2026',
+    bookValue: 'N/A', appraised: 181821838.19, totalBldgs: 0,
+    goodNo: 0, minorNo: 0, minorCost: 0, majorNo: 0, majorCost: 0, rehabNo: 0, rehabCost: 0,
+    remarks: 'Subgrade preparation and compaction are ongoing using rollers.', photo: '',
+    visits: [
+      { id: 'v1', date: '2026-02-10', percentage: 30, evaluation: 'Initial excavation and slope protection framework set.', photo: '' },
+      { id: 'v2', date: '2026-03-01', percentage: 40, evaluation: 'Subgrade compaction proceeding as scheduled.', photo: '' }
+    ]
+  },
+  { id: 'N18R010027', name: 'Proposed – Mixed Used 2-Storey Commercial Building with Mezzanine', location: 'Mamay Bypass Road, Davao City', percentage: 60,
+    mapQuery: 'Angliongto Street, Buhangin, Davao City',
+    region: 'Region XI', office: 'JCQ Construction and Supply Co.', agency: 'DPWH Davao City District Engineering Office', group: '(a) Main',
+    lotOwned: 2400, lotLeased: 0, birZonal: 15800, status: 'Ongoing Construction', leased: '',
+    floorArea: 2147.4, storeys: 'N/A', type: 'PCCP (Portland Cement Concrete Pavement), 150 mm Thick', built: 'AB 2026',
+    bookValue: 'N/A', appraised: 1852606.56, totalBldgs: 0,
+    goodNo: 0, minorNo: 0, minorCost: 0, majorNo: 0, majorCost: 0, rehabNo: 0, rehabCost: 0,
+    remarks: 'Concrete pouring is ongoing.', photo: '',
+    visits: [
+      { id: 'v3', date: '2026-02-15', percentage: 50, evaluation: 'Foundation footing completed.', photo: '' },
+      { id: 'v4', date: '2026-03-05', percentage: 60, evaluation: 'Mezzanine deck framing in progress.', photo: '' }
+    ]
+  },
+  { id: 'N18R010034', name: 'Samal Island Davao City Connector Project', location: 'Barangay Limao, Island Garden City of Samal to Brgy. V Hizon, Davao City', percentage: 20,
+    mapQuery: 'Samal Island Davao City Connector Project, Davao City',
+    region: 'Region XI', office: 'China Road and Bridge Corporation', agency: 'DPWH Unified Project Management Office', group: '(a) Main',
+    lotOwned: 'N/A', lotLeased: 0, birZonal: 13384, status: 'Ongoing Construction', leased: 'N/A',
+    floorArea: 1222, storeys: 1, type: 'Mixed', built: 'On going',
+    bookValue: 'N/A', appraised: 20835603081, totalBldgs: 1,
+    goodNo: '', minorNo: '', minorCost: '', majorNo: '', majorCost: '', rehabNo: '', rehabCost: '',
+    remarks: 'Marine geotechnical borings underway.', photo: '', visits: []
+  },
+  { id: 'N18R010041', name: 'Starbucks Azuela Highstreet Davao', location: 'R. Castillo St corner J.P Laurel Ave, Lanang, Davao City', percentage: 100,
+    mapQuery: 'Starbucks Azuela Highstreet Davao, Davao City',
+    region: 'Region XI', office: '121 – East Industries', agency: 'DPWH Davao City', group: '(c) Others',
+    lotOwned: 'N/A', lotLeased: 0, birZonal: 3000, status: 'Privately Owned', leased: 'N/A',
+    floorArea: 300, storeys: 2, type: 'Reinforced concrete', built: '2026-09-20',
+    bookValue: 'N/A', appraised: 'N/A', totalBldgs: 0,
+    goodNo: 0, minorNo: 0, minorCost: 0, majorNo: 0, majorCost: 0, rehabNo: 0, rehabCost: 0,
+    remarks: 'Fully operational branch.', photo: '', visits: []
+  },
+  { id: 'N18R010058', name: 'Jollibee', location: 'Diversion Road, corner La Verna Passway, Cabantian, Davao City', percentage: 100,
+    mapQuery: 'Jollibee Diversion Road corner La Verna Passway, Davao City',
+    region: 'Region XI', office: 'Dizon Farms', agency: 'DPWH Davao City', group: '(a) Main',
+    lotOwned: 'N/A', lotLeased: 0, birZonal: 'N/A', status: 'Privately Owned', leased: 'N/A',
+    floorArea: 400, storeys: 1, type: '', built: '2026-08-01',
+    bookValue: 'N/A', appraised: 'N/A', totalBldgs: 1,
+    goodNo: '', minorNo: '', minorCost: '', majorNo: '', majorCost: '', rehabNo: '', rehabCost: '',
+    remarks: 'Operational.', photo: '', visits: []
+  }
+];
+
+var STORE_KEY = 'hide-pims-records-v3';
+var app = document.getElementById('app');
+var state = { q: '', editing: false };
+var records = load();
+var toastTimer;
+
+var ICONS = {
+  pin: '<path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  building: '<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-3h4v3"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  left: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  right: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  route: '<path d="M12 3l9 9-9 9-9-9z"/><path d="M8 12h7M12 8l4 4-4 4"/>',
+  layers: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  shield: '<path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  note: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+  lot: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  database: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  hardhat: '<path d="M3 18h18M5 18a7 7 0 0 1 14 0M10 11V6h4v5"/>',
+  key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 9"/>',
+  camera: '<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  pct: '<path d="M19 5L5 19M5 5l14 14"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/>'
+};
+function ic(name, size) {
+  size = size || 18;
+  return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || ICONS.tag) + '</svg>';
+}
+document.getElementById('brandMark').innerHTML = ic('database', 24);
+
+function clone(x) { return JSON.parse(JSON.stringify(x)); }
+function load() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      var o = JSON.parse(raw);
+      if (o && o.v === DATA_VERSION && Array.isArray(o.rows)) return o.rows;
+    }
+  } catch (e) {}
+  return clone(DATA);
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ v: DATA_VERSION, rows: records })); return true; }
+  catch (e) { return false; }
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function slugOf(id) { return String(id).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+function hashFor(id) { return '#record-' + slugOf(id); }
+function isNum(v) { return typeof v === 'number' && isFinite(v); }
+function peso(n) {
+  try { return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
+  catch (e) { return '₱' + n.toLocaleString(); }
+}
+function dateText(v) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (!m) return esc(v);
+  return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+function kw(s) { return '<span class="kw">' + s + '</span>'; }
+function toast(m) {
+  var el = document.getElementById('toast');
+  el.innerHTML = '<span>' + esc(m) + '</span>';
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.classList.remove('show'); }, 3200);
+}
+function pill(group, value) {
+  var tone = (TONES[group] && TONES[group][value]) || 'neutral';
+  return '<span class="pill t-' + tone + '">' + esc(value) + '</span>';
+}
+function mapQuery(r) { return r.mapQuery || ((r.name || '') + ', ' + (r.location || '')); }
+function mapUrl(r) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQuery(r)); }
+function dirUrl(r) { return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(mapQuery(r)); }
+function rating(r) {
+  var n = function (v) { return isNum(v) && v > 0; };
+  if (n(r.rehabNo)) return 'Needs total rehab';
+  if (n(r.majorNo)) return 'Major repair';
+  if (n(r.minorNo)) return 'Minor repair';
+  if (n(r.goodNo)) return 'Good';
+  return 'Not yet rated';
+}
+
+function renderProgressBar(pct) {
+  pct = parseInt(pct, 10) || 0;
+  return '<div class="progress-box"><div class="progress-bar-track"><div class="progress-bar-fill" style="width: ' + pct + '%;"></div></div><span class="progress-num">' + pct + '%</span></div>';
+}
+
+function renderPctDropdown(r, uid) {
+  var current = parseInt(r.percentage, 10) || 0;
+  var optionsHtml = OPTIONS.percentages.map(function(p) {
+    return '<option value="' + p + '"' + (p === current ? ' selected' : '') + '>' + p + '%</option>';
+  }).join('');
+  return '<select class="pct-select" ' + (uid ? 'id="' + uid + '" ' : '') + 'data-id="' + esc(r.id) + '" data-key="percentage" aria-label="Construction Percentage">' + optionsHtml + '</select>';
+}
+
+function control(r, key, uid) {
+  var f = FIELDS[key], v = r[key];
+  if (key === 'percentage') return renderPctDropdown(r, uid);
+  var common = (uid ? 'id="' + uid + '" ' : '') + 'class="in" data-id="' + esc(r.id) + '" data-key="' + key + '" aria-label="' + esc(f.label) + ' for ' + esc(r.id) + '"';
+  if (f.kind === 'select') {
+    var opts = f.options.indexOf(v) >= 0 || v === '' || v == null ? f.options : [v].concat(f.options);
+    return '<select ' + common + '>' + opts.map(function (o) {
+      return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>';
+    }).join('') + '</select>';
+  }
+  if (f.kind === 'textarea') return '<textarea ' + common + ' rows="4">' + esc(v == null ? '' : v) + '</textarea>';
+  var mode = (f.kind === 'money' || f.kind === 'area' || f.kind === 'perarea' || f.kind === 'int') ? ' inputmode="decimal"' : '';
+  return '<input ' + common + ' type="text"' + mode + ' value="' + esc(v == null ? '' : v) + '">';
+}
+
+function display(r, key) {
+  var f = FIELDS[key], v = r[key];
+  if (key === 'percentage') return renderProgressBar(v);
+  if (v === '' || v == null) return '<span class="none">—</span>';
+  if (typeof v === 'string' && v.trim().toUpperCase() === 'N/A') return '<span class="none">N/A</span>';
+  switch (f.kind) {
+    case 'money':    return isNum(v) ? '<span class="num">' + peso(v) + '</span>' : esc(v);
+    case 'area':     return isNum(v) ? '<span class="num">' + v.toLocaleString('en-PH') + ' sq m</span>' : esc(v);
+    case 'perarea':  return isNum(v) ? '<span class="num">' + peso(v) + ' per sq m</span>' : esc(v);
+    case 'int':      return isNum(v) ? '<span class="num">' + v.toLocaleString('en-PH') + '</span>' : esc(v);
+    case 'date':     return '<span class="num">' + dateText(v) + '</span>';
+    case 'textarea': return '<p class="remark">' + esc(v) + '</p>';
+  }
+  if (TONES[key]) return pill(key, v);
+  return esc(v);
+}
+
+function matches() {
+  var q = state.q.trim().toLowerCase();
+  return records.filter(function (r) {
+    return !q || MASTER_COLUMNS.some(function (k) { return String(r[k] == null ? '' : r[k]).toLowerCase().indexOf(q) >= 0; });
+  });
+}
+
+function rowHtml(r) {
+  var link = '<a class="bid" href="' + hashFor(r.id) + '">' + esc(r.id) + '</a>';
+  var pin = '<td class="pin"><a class="pinbtn" href="' + mapUrl(r) + '" target="_blank" rel="noopener noreferrer" aria-label="View ' + esc(r.name) + ' on Google Maps" title="View on Google Maps">' + ic('pin', 18) + '</a></td>';
+  if (!state.editing) {
+    return '<tr>' +
+      '<td data-label="Building ID">' + link + '</td>' +
+      '<td class="nm" data-label="Name of Building">' + esc(r.name) + '</td>' +
+      '<td class="lc" data-label="Location">' + esc(r.location) + '</td>' +
+      '<td data-label="Progress">' + renderProgressBar(r.percentage) + '</td>' +
+      '<td data-label="Status">' + pill('status', r.status) + '</td>' +
+      pin +
+    '</tr>';
+  }
+  return '<tr>' +
+    '<td data-label="Building ID">' + link + '</td>' +
+    '<td data-label="Name of Building">' + control(r, 'name') + '</td>' +
+    '<td data-label="Location">' + control(r, 'location') + '</td>' +
+    '<td data-label="Progress">' + control(r, 'percentage') + '</td>' +
+    '<td data-label="Status">' + control(r, 'status') + '</td>' +
+    pin +
+    '<td><button class="btn small danger" type="button" data-act="del" data-id="' + esc(r.id) + '">Delete</button></td>' +
+  '</tr>';
+}
+
+function updateRows() {
+  var rows = matches();
+  var cols = MASTER_COLUMNS.length + 1 + (state.editing ? 1 : 0);
+  var tbody = document.getElementById('rows');
+  if (!tbody) return;
+  tbody.innerHTML = rows.length ? rows.map(rowHtml).join('') :
+    '<tr><td colspan="' + cols + '" class="empty">No records match “' + esc(state.q) + '”.</td></tr>';
+  var q = state.q.trim();
+  var qv = esc(q.replace(/'/g, "''"));
+  var where = q ? ' ' + kw('WHERE') + ' ' + MASTER_COLUMNS.map(function (k) {
+    return FIELDS[k].col + ' ' + kw('LIKE') + " '%" + qv + "%'";
+  }).join(' ' + kw('OR') + ' ') : '';
+  document.getElementById('sqlcode').innerHTML = kw('SELECT') + ' ' + MASTER_COLUMNS.map(function (k) { return FIELDS[k].col; }).join(', ') +
+    ' ' + kw('FROM') + ' ' + TABLE + where + ';';
+  document.getElementById('sqlres').textContent = rows.length + ' of ' + records.length + ' rows';
+}
+
+function viewMaster() {
+  var e = state.editing;
+  var tiles = [{ icon: 'database', n: records.length, l: 'Projects on file' }].concat(OPTIONS.status.map(function (s) {
+    return { icon: STATUS_ICONS[s] || 'note', n: records.filter(function (r) { return r.status === s; }).length, l: s };
+  }));
+  var tilesHtml = '<div class="tiles">' + tiles.map(function (t) {
+    return '<div class="tile"><span class="dot">' + ic(t.icon, 22) + '</span><div><b>' + t.n + '</b><span class="l">' + esc(t.l) + '</span></div></div>';
+  }).join('') + '</div>';
+
+  var head = MASTER_COLUMNS.map(function (k) {
+    var f = FIELDS[k];
+    return '<th scope="col">' + esc(f.short || f.label) + (k === 'id' ? '<abbr class="pk" title="Primary key">PK</abbr>' : '') + '</th>';
+  }).join('') + '<th scope="col">Map</th>' + (e ? '<th scope="col"><span class="sr">Actions</span></th>' : '');
+
+  var dev = e ? '<section class="dev" aria-label="Developer tools"><h2>Developer tools</h2>' +
+    '<p>Edits are saved in this browser. Copy data to JSON format to update hardcoded source code.</p>' +
+    '<div class="actions"><button class="btn primary" type="button" data-act="copy">' + ic('copy', 16) + 'Copy data as JSON</button>' +
+    '<button class="btn" type="button" data-act="reset">Reset to original data</button></div>' +
+    '<textarea id="json" class="json" readonly hidden aria-label="Data as JSON"></textarea></section>' : '';
+
+  app.innerHTML =
+    '<div class="pagehead"><p class="eyebrow">' + ic('database', 16) + 'Database Overview</p>' +
+    '<h1>HIDE Construction Database Inventory System</h1>' +
+    '<p class="lede">Region XI. Select a Building ID to open details, or view site visits and construction progress percentages.</p></div>' +
+    tilesHtml +
+    '<div class="bar"><div class="search">' + ic('search', 18) + '<label class="sr" for="q">Search records</label>' +
+    '<input id="q" class="in" type="search" placeholder="Search by ID, name, location or status" value="' + esc(state.q) + '" autocomplete="off"></div>' +
+    (e ? '<button class="btn primary" type="button" data-act="add">' + ic('plus', 16) + 'Add Project</button>' : '') + '</div>' +
+    '<div class="sql"><span class="sqltag">Query</span><code id="sqlcode"></code><span class="sqlres" id="sqlres"></span></div>' +
+    '<div class="tablewrap"><table><caption class="sr">HIDE Construction Inventory</caption><thead><tr>' + head + '</tr></thead><tbody id="rows"></tbody></table></div>' +
+    dev + '<p class="source">' + esc(SOURCE_NOTE) + '</p>';
+  updateRows();
+}
+
+var PLACEHOLDER = '<div class="ph">' + ic('image', 44) +
+  '<p><strong>No photograph yet</strong></p><p class="small">Upload photo or drag image here.</p></div>';
+
+var MAP_ART = '<svg viewBox="0 0 320 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+  '<rect width="320" height="130" fill="var(--map-land)"/>' +
+  '<path d="M-10 104C60 74 110 124 180 89S290 44 335 64" fill="none" stroke="var(--map-water)" stroke-width="16" stroke-linecap="round"/>' +
+  '<g fill="var(--map-block)"><rect x="18" y="14" width="56" height="30" rx="4"/><rect x="92" y="10" width="40" height="22" rx="4"/><rect x="214" y="12" width="64" height="26" rx="4"/><rect x="40" y="88" width="50" height="28" rx="4"/><rect x="236" y="94" width="58" height="26" rx="4"/></g>' +
+  '<g stroke="var(--map-road)" fill="none" stroke-linecap="round"><path d="M0 56h320" stroke-width="7"/><path d="M148 0v130" stroke-width="7"/><path d="M0 8l110 60M200 130l120-70" stroke-width="4"/></g>' +
+  '<g transform="translate(148 56)"><ellipse cx="0" cy="9" rx="13" ry="5" fill="var(--accent)" opacity=".22"/>' +
+  '<path d="M0 9C-11 -3 -11 -18 0 -18S11 -3 0 9z" fill="var(--accent)"/><circle cx="0" cy="-9" r="4" fill="var(--surface)"/></g></svg>';
+
+function viewDetail(rec) {
+  var e = state.editing;
+  var i = records.indexOf(rec), prev = records[i - 1], next = records[i + 1];
+
+  var head = '<header class="cardhead"><div class="cardhead-main"><p class="eyebrow">' + ic('building', 16) + 'Property Detail</p>' +
+    (e ? '<h1 class="sr">' + esc(rec.name) + '</h1><label class="sr" for="f-name">Name</label>' + control(rec, 'name', 'f-name') +
+         '<label class="sr" for="f-location">Location</label>' + control(rec, 'location', 'f-location')
+       : '<h1>' + esc(rec.name) + '</h1><p class="where">' + ic('pin', 18) + '<span>' + esc(rec.location) + '</span></p>') +
+    '</div><div class="cardhead-side"><span class="idtag">' + esc(rec.id) + '</span>' +
+    (e ? control(rec, 'status', 'f-status-head') : pill('status', rec.status)) +
+    '</div></header>';
+
+  var photo = '<figure><div class="photo' + (rec.photo ? ' has' : '') + '" data-drop>' +
+    (rec.photo ? '<img src="' + esc(rec.photo) + '" alt="Front view">' : PLACEHOLDER) + '</div>' +
+    '<figcaption class="photo-cap"><span class="k">Main Front View</span><span class="photo-actions">' +
+    '<button class="btn small" type="button" data-act="pick">' + ic('camera', 15) + (rec.photo ? 'Change' : 'Upload photo') + '</button>' +
+    (rec.photo ? '<button class="btn small" type="button" data-act="rmphoto">Remove</button>' : '') +
+    '</span></figcaption><input type="file" id="file" accept="image/*" hidden></figure>';
+
+  var progressWidget = '<div class="progress-card"><div class="progress-card-head"><span class="progress-card-title">' + ic('pct', 18) + 'Overall Construction Completion</span>' +
+    renderPctDropdown(rec, 'f-pct-widget') + '</div>' + renderProgressBar(rec.percentage) + '</div>';
+
+  var map = '<div class="mapbox"><span class="k">Location Map</span>' +
+    '<a class="mapcard" href="' + mapUrl(rec) + '" target="_blank" rel="noopener noreferrer">' + MAP_ART +
+    '<span class="mapcard-text"><span class="dot">' + ic('pin', 20) + '</span><div><strong>Open in Google Maps</strong><small>' + esc(rec.location) + '</small></div>' + ic('ext', 18) + '</span></a>' +
+    '<a class="btn" href="' + dirUrl(rec) + '" target="_blank" rel="noopener noreferrer">' + ic('route', 16) + 'Get Directions</a></div>';
+
+  var secs = SECTIONS.map(function (s) {
+    var rows = s.fields.map(function (k) {
+      var f = FIELDS[k], wide = f.kind === 'textarea';
+      if (!e && wide && (rec[k] === '' || rec[k] == null)) {
+        return '<div class="row wide"><dt class="k sr">' + esc(f.label) + '</dt><dd><span class="none">No remarks.</span></dd></div>';
+      }
+      return '<div class="row' + (wide ? ' wide' : '') + '"><dt class="k' + (wide && !e ? ' sr' : '') + '">' +
+        (e ? '<label for="f-' + k + '">' + esc(f.label) + '</label>' : esc(f.label)) + '</dt><dd>' +
+        (e ? control(rec, k, 'f-' + k) : display(rec, k)) + '</dd></div>';
+    }).join('');
+    return '<section class="sec"><h2><span class="dot">' + ic(s.icon, 18) + '</span>' + esc(s.title) +
+      (s.rating ? pill('rating', rating(rec)) : '') + '</h2><dl class="fields">' + rows + '</dl></section>';
+  }).join('');
+
+  var visitsList = rec.visits || [];
+  var visitsCardsHtml = visitsList.length === 0 ? '<p class="none" style="padding:16px; text-align:center;">No site visits logged yet.</p>' :
+    '<div class="visits-grid">' + visitsList.map(function (v, idx) {
+      return '<div class="visit-card">' +
+        '<div class="visit-img">' + (v.photo ? '<img src="' + esc(v.photo) + '" alt="Visit photo">' : ic('camera', 32)) + '</div>' +
+        '<div class="visit-body">' +
+          '<div class="visit-date"><span>' + ic('calendar', 14) + ' ' + dateText(v.date) + '</span>' + pill('status', v.percentage + '%') + '</div>' +
+          '<p class="visit-eval">' + esc(v.evaluation || 'No evaluation noted.') + '</p>' +
+          (e ? '<button class="btn small danger" type="button" data-act="delvisit" data-vidx="' + idx + '">Delete Log</button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('') + '</div>';
+
+  var visitsSection = '<section class="sec visits-sec">' +
+    '<div class="visits-head"><h2><span class="dot">' + ic('camera', 18) + '</span>Site Visits & Progress Log</h2>' +
+    '<button class="btn primary small" type="button" data-act="toggle-add-visit">' + ic('plus', 14) + 'Log New Visit</button></div>' +
+    '<div id="addVisitBox" class="add-visit-box" hidden>' +
+      '<strong>Log Site Visit & Inspection Evaluation</strong>' +
+      '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">' +
+        '<div><label class="k" for="vdate">Visit Date</label><input type="date" id="vdate" class="in" value="' + new Date().toISOString().split('T')[0] + '"></div>' +
+        '<div><label class="k" for="vpct">Recorded Progress (%)</label>' +
+          '<select id="vpct" class="in">' + OPTIONS.percentages.map(function(p){ return '<option value="' + p + '">' + p + '%</option>'; }).join('') + '</select></div>' +
+      '</div>' +
+      '<div><label class="k" for="veval">Evaluation / Remarks</label><textarea id="veval" class="in" rows="2" placeholder="Site observations, work accomplished..."></textarea></div>' +
+      '<div><label class="k" for="vphoto">Visit Photo</label><input type="file" id="vphoto" class="in" accept="image/*"></div>' +
+      '<div style="display:flex; gap:8px;"><button class="btn primary small" type="button" data-act="savevisit">Save Visit Record</button>' +
+      '<button class="btn small" type="button" data-act="toggle-add-visit">Cancel</button></div>' +
+    '</div>' +
+    visitsCardsHtml + '</section>';
+
+  var foot = '<footer class="cardfoot">' +
+    (prev ? '<a class="btn" href="' + hashFor(prev.id) + '">' + ic('left', 16) + '<span class="mono">' + esc(prev.id) + '</span></a>' : '<span></span>') +
+    (next ? '<a class="btn" href="' + hashFor(next.id) + '"><span class="mono">' + esc(next.id) + '</span>' + ic('right', 16) + '</a>' : '<span></span>') +
+    '</footer>';
+
+  app.innerHTML =
+    '<div class="topnav"><a class="btn primary" href="#inventory">' + ic('left', 16) + 'Back to Main Overview</a></div>' +
+    '<article class="card">' + head + '<div class="detail"><div class="left"><section aria-label="Photo">' + photo + '</section>' + progressWidget + map +
+    '</div><div class="right">' + secs + visitsSection + '</div></div>' + foot + '</article>';
+}
+
+function fileToDataUrl(file) {
+  return new Promise(function (resolve, reject) {
+    var fr = new FileReader();
+    fr.onerror = reject;
+    fr.onload = function () {
+      var img = new Image();
+      img.onerror = reject;
+      img.onload = function () {
+        var s = Math.min(1, 1000 / Math.max(img.width, img.height));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.width * s);
+        c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.80));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function currentRecord() {
+  var h = location.hash.slice(1);
+  if (h.indexOf('record-') !== 0) return null;
+  var s = h.slice(7);
+  return records.filter(function (r) { return slugOf(r.id) === s; })[0] || null;
+}
+function setPhoto(file) {
+  var rec = currentRecord();
+  if (!rec || !file) return;
+  if (!/^image\//.test(file.type)) { toast('Please select an image file.'); return; }
+  fileToDataUrl(file).then(function (url) {
+    rec.photo = url;
+    save(); viewDetail(rec); toast('Photo updated.');
+  }).catch(function () { toast('Failed to read image.'); });
+}
+
+function copyJson() {
+  var out = JSON.stringify(records.map(function (r) {
+    var c = Object.assign({}, r);
+    if (String(c.photo || '').indexOf('data:') === 0) c.photo = '';
+    return c;
+  }), null, 2);
+  try {
+    navigator.clipboard.writeText(out).then(function () { toast('JSON data copied to clipboard.'); });
+  } catch (err) { toast('Could not copy automatically.'); }
+}
+function addRecord() {
+  var nums = records.map(function (r) { var m = String(r.id).match(/(\d{4})$/); return m ? Number(m[1]) : 0; });
+  var id = ID_PREFIX + String(Math.max.apply(null, [0].concat(nums)) + 1).padStart(4, '0');
+  records.push({ id: id, name: 'New Construction Project', location: 'Davao City', percentage: 10, mapQuery: '', region: 'Region XI', group: OPTIONS.group[0], status: OPTIONS.status[0], photo: '', visits: [] });
+  save(); state.q = ''; viewMaster(); toast('Added ' + id);
+}
+function armed(btn, label, run) {
+  if (btn.dataset.armed) { run(); return; }
+  btn.dataset.armed = '1'; btn.textContent = 'Click to confirm';
+  setTimeout(function () { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = label; } }, 3000);
+}
+
+function route(initial) {
+  var rec = currentRecord();
+  if (rec) viewDetail(rec); else viewMaster();
+  if (!initial) { window.scrollTo(0, 0); }
+}
+window.addEventListener('hashchange', function () { route(false); });
+
+document.getElementById('editToggle').addEventListener('click', function () {
+  state.editing = !state.editing;
+  this.setAttribute('aria-pressed', String(state.editing));
+  document.getElementById('editLabel').textContent = 'Edit mode: ' + (state.editing ? 'on' : 'off');
+  route(true);
+});
+
+document.addEventListener('input', function (ev) {
+  var t = ev.target;
+  if (t.id === 'q') { state.q = t.value; updateRows(); return; }
+  if (!t.dataset || !t.dataset.key) return;
+  var rec = records.filter(function (r) { return r.id === t.dataset.id; })[0];
+  if (!rec) return;
+  var key = t.dataset.key, f = FIELDS[key], v = t.value;
+  if (key === 'percentage') v = parseInt(v, 10) || 0;
+  rec[key] = v;
+  save();
+});
+
+document.addEventListener('change', function (ev) {
+  var t = ev.target;
+  if (t.id === 'file') { setPhoto(t.files[0]); t.value = ''; }
+  if (t.dataset && t.dataset.key === 'percentage') {
+    var rec = records.filter(function (r) { return r.id === t.dataset.id; })[0];
+    if (rec) {
+      rec.percentage = parseInt(t.value, 10) || 0;
+      save();
+      var current = currentRecord();
+      if (current && current.id === rec.id) { viewDetail(rec); }
+      toast('Progress updated to ' + t.value + '%');
+    }
+  }
+});
+
+document.addEventListener('click', function (ev) {
+  var btn = ev.target.closest('[data-act]');
+  if (!btn) return;
+  var act = btn.dataset.act;
+  if (act === 'add') addRecord();
+  else if (act === 'copy') copyJson();
+  else if (act === 'pick') document.getElementById('file').click();
+  else if (act === 'rmphoto') {
+    var rec = currentRecord();
+    if (rec) { rec.photo = ''; save(); viewDetail(rec); toast('Photo removed.'); }
+  } else if (act === 'del') {
+    armed(btn, 'Delete', function () {
+      var id = btn.dataset.id;
+      records = records.filter(function (r) { return r.id !== id; });
+      save(); updateRows(); toast('Deleted ' + id);
+    });
+  } else if (act === 'reset') {
+    armed(btn, 'Reset Data', function () {
+      try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+      records = clone(DATA); state.q = ''; viewMaster(); toast('Restored default records.');
+    });
+  } else if (act === 'toggle-add-visit') {
+    var box = document.getElementById('addVisitBox');
+    if (box) box.hidden = !box.hidden;
+  } else if (act === 'savevisit') {
+    var rec = currentRecord();
+    if (!rec) return;
+    var vdate = document.getElementById('vdate').value;
+    var vpct = parseInt(document.getElementById('vpct').value, 10) || 0;
+    var veval = document.getElementById('veval').value;
+    var vphotoFile = document.getElementById('vphoto').files[0];
+
+    var newVisit = { id: 'v_' + Date.now(), date: vdate, percentage: vpct, evaluation: veval, photo: '' };
+    var finalize = function() {
+      if (!rec.visits) rec.visits = [];
+      rec.visits.unshift(newVisit);
+      rec.percentage = vpct;
+      save();
+      viewDetail(rec);
+      toast('Site visit logged & percentage updated!');
+    };
+
+    if (vphotoFile) {
+      fileToDataUrl(vphotoFile).then(function(url){
+        newVisit.photo = url;
+        finalize();
+      }).catch(finalize);
+    } else {
+      finalize();
+    }
+  } else if (act === 'delvisit') {
+    var rec = currentRecord();
+    var idx = parseInt(btn.dataset.vidx, 10);
+    if (rec && rec.visits && !isNaN(idx)) {
+      rec.visits.splice(idx, 1);
+      save();
+      viewDetail(rec);
+      toast('Visit log removed.');
+    }
+  }
+});
+
+route(true);
+})();
+</script>
+</body></html>
